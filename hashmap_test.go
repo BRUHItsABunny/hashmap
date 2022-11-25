@@ -1,6 +1,7 @@
 package hashmap
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"math/rand"
@@ -486,4 +487,31 @@ func TestGetOrInsertHangIssue67(t *testing.T) {
 	}()
 
 	wg.Wait()
+}
+
+func TestJSONMarshal(t *testing.T) {
+	t.Parallel()
+	data := map[string]string{
+		"key1": "elephant",
+		"key2": "monkey",
+	}
+
+	m := New[string, string]()
+
+	for k, v := range data {
+		m.Set(k, v) // insert verification
+		value, ok := m.Get(k)
+		assert.True(t, ok)
+		assert.Equal(t, v, value)
+	}
+
+	jsonBytesData, err := json.Marshal(data)
+	assert.True(t, err == nil)
+
+	jsonBytes, err := json.Marshal(m)
+	assert.True(t, err == nil)
+
+	assert.Equal(t, string(jsonBytesData), string(jsonBytes))
+	// fmt.Println(string(jsonBytesData))
+	// fmt.Println(string(jsonBytes))
 }

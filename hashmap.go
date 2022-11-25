@@ -3,6 +3,7 @@ package hashmap
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -319,3 +320,68 @@ func (m *Map[Key, Value]) fillIndexItems(store *store[Key, Value]) {
 		item = item.Next()
 	}
 }
+
+func (m *Map[Key, Value]) MarshalJSON() ([]byte, error) {
+	tmpMap := make(map[string]any)
+	m.Range(func(k Key, v Value) bool {
+		tmpMap[fmt.Sprint(k)] = v
+		return true
+	})
+	return json.Marshal(tmpMap)
+}
+
+/*
+func (m *Map[Key, Value]) UnmarshalJSON(data []byte) error {
+	tmpMap := make(map[string]any)
+	err := json.Unmarshal(data, &tmpMap)
+
+	if err != nil {
+		return err
+	}
+
+	for k, v := range tmpMap {
+		var vv any
+		// Can't make an unmarshaler
+		// because JSON requires string keys and converting strings to unknown type upon runtime is impossible
+		switch Key.(type) {
+		case int:
+		case int8:
+		case int16:
+		case int32:
+		case int64:
+			vvv, err := strconv.ParseInt(k, 10, 64)
+			if err != nil {
+				return err
+			}
+			vv = vvv
+			break
+		case uintptr:
+		case uint:
+		case uint8:
+		case uint16:
+		case uint32:
+		case uint64:
+			vvv, err := strconv.ParseUint(k, 10, 64)
+			if err != nil {
+				return err
+			}
+			vv = vvv
+			break
+		case float32:
+		case float64:
+			vvv, err := strconv.ParseFloat(k, 64)
+			if err != nil {
+				return err
+			}
+			vv = vvv
+			break
+		default: // string
+			vv = k
+			break
+		}
+		m.Set(vv.(Key), v.(Value))
+	}
+
+	return nil
+}
+*/
